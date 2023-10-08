@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UObject = UnityEngine.Object;
-/*一个无关痛痒的改动*/
+
 namespace anypratice
 {
     public class anypratice : Mod, IGlobalSettings<settings>, IMenuMod
@@ -146,11 +146,11 @@ namespace anypratice
             {
                 if (self.gameObject.name == "Absolute Radiance" && self.FsmName == "Control")
                 {
-                    if (_set.cycle != 0)
+                    /*if (_set.cycle != 0)
                     {
                         Log("cycle ok");
                         self.gameObject.AddComponent<Cycle>();
-                    }
+                    }*/
                     if (_set.beamlock)
                     {
                         Log("beamlock ok");
@@ -337,7 +337,7 @@ namespace anypratice
                 Loader = () => _set.indicator ? 0 : 1
             }
         );
-            menus.Add(
+            /*menus.Add(
            new()
            {
                Name = "阶段选择",
@@ -353,7 +353,7 @@ namespace anypratice
                Saver = i => _set.cycle= i ,
                Loader = () => _set.cycle
            }
-       );
+       );*/
             /* menus.Add(
              new()
              {
