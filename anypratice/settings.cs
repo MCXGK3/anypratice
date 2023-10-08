@@ -18,6 +18,7 @@ namespace anypratice
         public bool skin=true;
         public bool indicator=true;
         public int cycle=0;
+        public bool timer=true;
        //public bool superdash=true;
     }
 }

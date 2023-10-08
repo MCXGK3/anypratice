@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UObject = UnityEngine.Object;
-
+/*一个无关痛痒的改动*/
 namespace anypratice
 {
     public class anypratice : Mod, IGlobalSettings<settings>, IMenuMod
@@ -354,20 +354,20 @@ namespace anypratice
                Loader = () => _set.cycle
            }
        );
-            /* menus.Add(
+             menus.Add(
              new()
              {
-                 Name = "超冲停滞",
-                 Description = "帅",
+                 Name = "辐光计时",
+                 Description = "会记录从第一刀到最后一刀的时间",
                  Values = new string[]
                  {
                      Language.Language.Get("MOH_ON", "MainMenu"),
                      Language.Language.Get("MOH_OFF", "MainMenu"),
                  },
-                 Saver = i => _set.superdash = i == 0,
-                 Loader = () => _set.superdash ? 0 : 1
+                 Saver = i => _set.timer = i == 0,
+                 Loader = () => _set.timer ? 0 : 1
              }
-         );*/
+         );
             return menus;
         }
 
