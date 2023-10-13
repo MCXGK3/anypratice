@@ -4,27 +4,42 @@ using Modding;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UObject = UnityEngine.Object;
-/*一个无关痛痒的改动*/
-namespace anypratice
+
+namespace anypractice
 {
-    public class anypratice : Mod, IGlobalSettings<settings>, IMenuMod
+    public class anypractice : Mod, IGlobalSettings<settings>, IMenuMod
     {
-        internal static anypratice Instance;
-        private bool test = true;
+        internal static anypractice Instance;
         private bool test2 = false;
-        private bool test3 = false;
-        private bool r0 = false;
-        private bool r1 = false;
-        private int damage=-5;
+        private bool skinused = false;
         public settings _set = new();
-        private Texture2D radianceSkin0;
-        private Texture2D radianceSkin1;
+        public class radianceSkin{
+            public string name;
+            public string author;
+            public bool v1 = false;
+            public bool v2 = false;
+            public bool v3 = false;
+            public Texture2D skin1 = new(1, 1);
+            public Texture2D skin2 = new(1, 1);
+            public Texture2D skin3 = new(1, 1);
+        }
+        public List<radianceSkin> skinList=new List<radianceSkin>();
+        public List<string> skinNames=new List<string>();
+        public string[] skinvalues;
+        List<Texture> texs = new List<Texture>();
+        private int i = 0;
+        //private Texture2D radianceSkin1;
         public List<GameObject> CH = new();
+        public timerhelp _th;
+        private bool timerused=false;
         public bool ToggleButtonInsideMenu => true;
-        public anypratice() : base("anypratice")
+        public anypractice() : base("anypractice")
         {
             Instance = this;
         }
@@ -33,24 +48,74 @@ namespace anypratice
             return "0.0.0.1";
         }
 
+
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
+            
             On.PlayMakerFSM.OnEnable += fsm_on;
             ModHooks.HeroUpdateHook += baldurfix;
             ModHooks.AfterPlayerDeadHook += carefreeset1;
             ModHooks.CharmUpdateHook += carefreeset;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += sceneChanged;
-            var stream = typeof(anypratice).Assembly.GetManifestResourceStream("anypratice.Rad0.png");
-            if (stream != null)
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            string[] manifestResourceNames = executingAssembly.GetManifestResourceNames();
+            // Log("ALL the resource have " + manifestResourceNames.Length);
+            skinNames.Add("关闭");
+            skinList.Add(new() { author="Team Cherry"});
+            foreach (string text in manifestResourceNames)
             {
-                byte[] array = new byte[stream.Length];
-                stream.Read(array, 0, array.Length);
-                stream.Dispose();
-                radianceSkin0 = new(1, 1);
-                radianceSkin0.LoadImage(array, true);
-                r0 = true;
+                Log(text);
+                if (!text.EndsWith(".png"))
+                {
+                    continue;
+                }
+
+                Stream stream = executingAssembly.GetManifestResourceStream(text);
+                if (stream != null)
+                {
+                    byte[] array = new byte[stream.Length];
+                    stream.Read(array, 0, array.Length);
+                    stream.Dispose();
+                    string[] temp = text.Split('-');
+                    temp[0] = temp[0].Split('.')[2];
+                    temp[2] = temp[2].Split('.')[0];
+                    if (!temp[0].IsAny(skinNames.ToArray()))
+                    {
+                        skinNames.Add(temp[0]);
+                        i = skinNames.Count-1;
+                        skinList.Add(new radianceSkin {name=temp[0],author = temp[1]});
+                    }
+                    else
+                    {
+                        i = skinNames.IndexOf(temp[0]);
+                    }
+                    switch (temp[2].ToString())
+                    {
+                        case "1":
+                            skinList[i].skin1.LoadImage(array, true);
+                            skinList[i].v1 = true;
+                            break;
+                        case "2":
+                            skinList[i].skin2.LoadImage(array, true);
+                            skinList[i].v2 = true;
+                            break;
+                        case "3":
+                            skinList[i].skin3.LoadImage(array, true);
+                            skinList[i].v3 = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                Log(text + "is loaded");
             }
-            stream = typeof(anypratice).Assembly.GetManifestResourceStream("anypratice.Rad1png");
+            skinvalues=skinNames.ToArray();
+            for (int i = 1; i < skinvalues.Length; i++)
+            {
+                skinvalues[i] += " from ";
+                skinvalues[i] += skinList[i].author;
+            }
+            /*stream = typeof(anypratice).Assembly.GetManifestResourceStream("anypratice.Rad1png");
             if (stream != null)
             {
                 byte[] array = new byte[stream.Length];
@@ -59,7 +124,7 @@ namespace anypratice
                 radianceSkin1 = new(1, 1);
                 radianceSkin1.LoadImage(array, true);
                 r1 = true;
-            }
+            }*/
         }
 
         private void carefreeset(PlayerData data, HeroController controller)
@@ -90,7 +155,7 @@ namespace anypratice
                     bool flag2 = instance != null;
                     if (flag2)
                     {
-                        Log("OK");
+                        Log("carefreeRNG Reset OK");
                         ReflectionHelper.SetField<HeroController, int>(instance, "hitsSinceShielded", 7);
                     }
                 }
@@ -137,6 +202,10 @@ namespace anypratice
                         test2 = false;
                     }
                 }
+                if (!_set.timer)
+                {
+                    _th.text.text = "";
+                }
             }
         }
 
@@ -146,6 +215,17 @@ namespace anypratice
             {
                 if (self.gameObject.name == "Absolute Radiance" && self.FsmName == "Control")
                 {
+                    if (_set.timer)
+                    {
+                        if (!timerused)
+                        {
+                            GameObject timer = new GameObject();
+                            UnityEngine.Object.DontDestroyOnLoad(timer);
+                            _th = timer.GetAddComponent<timerhelp>();
+                            timerused = true;
+                        }
+                        self.gameObject.AddComponent<Timer>();
+                    }
                     if (_set.cycle != 0)
                     {
                         Log("cycle ok");
@@ -157,26 +237,44 @@ namespace anypratice
                         self.gameObject.LocateMyFSM("Attack Commands").GetAction<RandomFloat>("Aim", 4).min = 0f;
                         self.gameObject.LocateMyFSM("Attack Commands").GetAction<RandomFloat>("Aim", 4).max = 0f;
                     }
-                    if (_set.skin)
+                    if (true)
                     {
                         Log("skin ok");
-                         /*if (r0 && r1)
+                        /*if (r0 && r1)
+                       {
+                           //FindChild(self.gameObject);
+                           //foreach (GameObject go in CH) 
+                               if (test)
+                               {
+                                   foreach (Material mat in materials)
+                                   {
+                                       TextureUtils.WriteTextureToFile(mat.mainTexture, "C:\\Users\\shownyoung\\Desktop\\temp\\" + mat.mainTexture.name + ".png");
+                                   }
+                               }*/
+                        Material[] materials = self.GetComponent<tk2dSprite>().Collection.materials;
+                        Log(materials.Length);
+                        if (_set.skin != 0)
                         {
-                            //FindChild(self.gameObject);
-                            //foreach (GameObject go in CH) 
-                            
-                                Material[] materials = self.GetComponent<tk2dSprite>().Collection.materials;
-                                if (test)
-                                {
-                                    foreach (Material mat in materials)
-                                    {
-                                        TextureUtils.WriteTextureToFile(mat.mainTexture, "C:\\Users\\shownyoung\\Desktop\\temp\\" + mat.mainTexture.name + ".png");
-                                    }
-                                }
-                            
-                            if (r0) materials[0].mainTexture = radianceSkin0;
-                            if (r1) materials[1].mainTexture = radianceSkin1;
-                        }*/
+                            if (!skinused)
+                            {
+                                texs.Add(materials[0].mainTexture);
+                                texs.Add(materials[1].mainTexture);
+                                texs.Add(materials[2].mainTexture);
+                                skinused = true;
+                            }
+                            if (skinList[_set.skin].v1) materials[0].mainTexture = skinList[_set.skin].skin1;
+                            if (skinList[_set.skin].v2) materials[1].mainTexture = skinList[_set.skin].skin2;
+                            if (skinList[_set.skin].v3) materials[2].mainTexture = skinList[_set.skin].skin3;
+                        }
+                        else
+                        {
+                            if (skinused)
+                            {
+                                materials[0].mainTexture = texs[0];
+                                materials[1].mainTexture = texs[1];
+                                materials[2].mainTexture = texs[2];
+                            }
+                        }
                     }
                     if (_set.orbindicator)
                     {
@@ -313,14 +411,10 @@ namespace anypratice
             new()
             {
                 Name = "辐光皮肤",
-                Description = "皮肤尚无",
-                Values = new string[]
-                {
-                    Language.Language.Get("MOH_ON", "MainMenu"),
-                    Language.Language.Get("MOH_OFF", "MainMenu"),
-                },
-                Saver = i => _set.skin = i == 0,
-                Loader = () => _set.skin ? 0 : 1
+                Description = "共有"+(skinvalues.Length-1)+"款皮肤",
+                Values = skinvalues,
+                Saver = i => _set.skin = i ,
+                Loader = () => _set.skin
             }
         );
             menus.Add(

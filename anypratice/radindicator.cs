@@ -1,4 +1,4 @@
-﻿namespace anypratice;
+﻿namespace anypractice;
 
 internal class radIndicators : MonoBehaviour
 {

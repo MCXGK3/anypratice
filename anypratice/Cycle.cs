@@ -1,7 +1,7 @@
-﻿using anypratice;
+﻿using anypractice;
 using System.EnterpriseServices;
 
-namespace anypratice
+namespace anypractice
 {
     internal class Cycle:MonoBehaviour
     {
@@ -12,7 +12,7 @@ namespace anypratice
         {
             hm = base.GetComponent<HealthManager>();
             pc = base.gameObject.LocateMyFSM("Phase Control");
-            switch (anypratice.Instance._set.cycle)
+            switch (anypractice.Instance._set.cycle)
             {
                 case 0: break;
                 case 1:
@@ -30,7 +30,7 @@ namespace anypratice
         {
             if (!set)
             {
-                switch (anypratice.Instance._set.cycle)
+                switch (anypractice.Instance._set.cycle)
                 {
                     case 0: break;
                     case 1:

@@ -8,11 +8,11 @@
     <!--<DocumentationFile>$(OutputPath)/$(AssemblyTitle).xml</DocumentationFile>-->
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>anypratice</RootNamespace>
-    <AssemblyName>anypratice</AssemblyName>
+    <RootNamespace>anypractice</RootNamespace>
+    <AssemblyName>anypractice</AssemblyName>
     <TargetFramework>net472</TargetFramework>
-    <AssemblyTitle>anypratice</AssemblyTitle>
-    <Product>anypratice</Product>
+    <AssemblyTitle>anypractice</AssemblyTitle>
+    <Product>anypractice</Product>
     <Description>A Hollow Knight Mod</Description>
     <Copyright>Copyright ©  2023</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
@@ -51,6 +51,24 @@
     </GetFileHash>
     <WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="$(OutputFileString);@(FilesWithHashes->'%(FileHash)');$(OutputZipString);@(ZipFilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
   </Target>
+  <ItemGroup>
+    <None Remove="Resources\1-0.png" />
+    <None Remove="Resources\Any2.0-Bob-1.png" />
+    <None Remove="Resources\Any2.0-Bob-2.png" />
+    <None Remove="Resources\OwORad-Axton-1.png" />
+    <None Remove="Resources\OwORad-Axton-2.png" />
+    <None Remove="Resources\RAD1.png" />
+    <None Remove="Resources\冰镇辐光-明-1.png" />
+    <None Remove="Resources\冰镇辐光-明-2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Any2.0-Bob-1.png" />
+    <EmbeddedResource Include="Resources\Any2.0-Bob-2.png" />
+    <EmbeddedResource Include="Resources\OwORad-Axton-1.png" />
+    <EmbeddedResource Include="Resources\OwORad-Axton-2.png" />
+    <EmbeddedResource Include="Resources\冰镇辐光-明-1.png" />
+    <EmbeddedResource Include="Resources\冰镇辐光-明-2.png" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>

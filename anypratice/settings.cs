@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace anypratice
+namespace anypractice
 {
     public class settings
     {
@@ -15,7 +15,7 @@ namespace anypratice
         public bool orbindicator=true;
         public bool carereset=true;
         public bool legacycost=true;
-        public bool skin=true;
+        public int skin=0;
         public bool indicator=true;
         public int cycle=0;
         public bool timer=true;
