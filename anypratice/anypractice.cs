@@ -16,7 +16,7 @@ namespace anypractice
     public class anypractice : Mod, IGlobalSettings<settings>, IMenuMod
     {
         internal static anypractice Instance;
-        private bool test2 = false;
+        private bool knightIndicator = false;
         public settings _set = new();
         private int i = 0;
         public timerhelp _th;
@@ -37,9 +37,22 @@ namespace anypractice
             
             On.PlayMakerFSM.OnEnable += fsm_on;
             ModHooks.HeroUpdateHook += baldurfix;
+            ModHooks.GetPlayerIntHook += LegacyCost;
             ModHooks.AfterPlayerDeadHook += carefreeset1;
             ModHooks.CharmUpdateHook += carefreeset;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += sceneChanged;
+        }
+
+        private int LegacyCost(string name, int orig)
+        {
+            if(name== "charmCost_32")
+            {
+                if (_set.legacycost)
+                {
+                    orig = 2;
+                }
+            }
+            return orig;
         }
 
         private void carefreeset(PlayerData data, HeroController controller)
@@ -62,8 +75,6 @@ namespace anypractice
 
         private void carefreeset1()
         {
-            if (_set.on)
-            {
                 if (_set.carereset)
                 {
                     HeroController instance = HeroController.instance;
@@ -74,14 +85,12 @@ namespace anypractice
                         ReflectionHelper.SetField<HeroController, int>(instance, "hitsSinceShielded", 7);
                     }
                 }
-            }
             return;
         }
 
         private void baldurfix()
         {
-            if (_set.on)
-            {
+
                 if (_set.baldurfix)
                 {
                     if (global::PlayerData.instance.blockerHits < 4)
@@ -102,26 +111,25 @@ namespace anypractice
                 }
                 if (_set.indicator)
                 {
-                    if (!test2)
+                    if (!knightIndicator)
                     {
-                        test2 = true;
+                        knightIndicator = true;
                         GameObject.Find("Knight").AddComponent<Indicator>();
                     }
                 }
                 else
                 {
-                    if (test2)
+                    if (knightIndicator)
                     {
                         Indicator indicator = GameObject.Find("Knight").GetComponent<Indicator>();
                         if (indicator != null) GameObject.Destroy(indicator);
-                        test2 = false;
+                        knightIndicator = false;
                     }
                 }
                 if (!_set.timer)
                 {
                     _th.text.text = "";
                 }
-            }
         }
 
         private void fsm_on(On.PlayMakerFSM.orig_OnEnable orig, PlayMakerFSM self)
