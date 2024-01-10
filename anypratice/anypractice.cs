@@ -126,8 +126,7 @@ namespace anypractice
 
         private void fsm_on(On.PlayMakerFSM.orig_OnEnable orig, PlayMakerFSM self)
         {
-            if (_set.on)
-            {
+
                 if (self.gameObject.name == "Absolute Radiance" && self.FsmName == "Control")
                 {
                     if (_set.timer)
@@ -161,7 +160,6 @@ namespace anypractice
                         self.gameObject.AddComponent<abyssremover>();
                     }      
                 }
-            } 
             orig(self);
             
         }
