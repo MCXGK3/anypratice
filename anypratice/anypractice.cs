@@ -63,14 +63,11 @@ namespace anypractice
 
         private void sceneChanged(Scene arg0, Scene arg1)
         {
-            if (_set.on)
-            {
                 if (_set.carereset)
                 {
                     bool flag = arg1.name == "GG_Workshop";
                     if (flag) { carefreeset1(); }
                 }
-            }
         }
 
         private void carefreeset1()
