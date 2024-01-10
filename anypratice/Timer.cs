@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Security.Cryptography.X509Certificates;
 using System.Transactions;
 using UnityEngine.UI;
@@ -9,9 +10,11 @@ namespace anypractice
     {
         private bool start=false;
         private bool started=false;
+        private bool win = false;
         private bool over=false;
         private bool overed = false;
         PlayMakerFSM _con;
+        PlayMakerFSM bc;
         SetBoolValue Ove=new();
         HealthManager _hm;
 
@@ -19,11 +22,14 @@ namespace anypractice
         private void Awake()
         {
             _con = base.gameObject.LocateMyFSM("Control");
-            anypractice.Instance._th.time = 0f;
+            bc = GameObject.Find("Boss Control").LocateMyFSM("Control");
+            if (anypractice.Instance._set.timer == 1)
+            {
+                anypractice.Instance._th.time = 0f;
+            }
            //Modding.Logger.Log("CREATE OK");
             On.HealthManager.TakeDamage += knighthit;
             _hm=base.GetComponent<HealthManager>();
-            //SetBoolValue Ove=new() {boolVariable=anypratice.Instance._th.over,boolValue=true,everyFrame=false};
         }
         private void Stop()
         {
@@ -31,12 +37,23 @@ namespace anypractice
             {
                 anypractice.Instance._th.over = true;
             }
+            anypractice.Instance.count++;
         }
         private void Start()
         {
             anypractice.Instance._th.start = false;
             _con.InsertCustomAction("Final Impact", Stop, 0);
+            bc.InsertCustomAction("Flash Down", () =>
+            {
+                StartCoroutine(starttimer());
+            }, 4);
             anypractice.Instance._th.over = false;
+        }
+
+        private IEnumerator starttimer()
+        {
+            yield return new WaitForSeconds(0.5f);
+            start=true;
         }
         private void knighthit(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
@@ -54,12 +71,7 @@ namespace anypractice
                 started= true;
                 anypractice.Instance._th.start=true;
             }
-            /*if (_hm.isDead&!over)
-            {
-                Modding.Logger.Log("stop");
-                over= true;
-                t.over=true;
-            }*/
+
 
         }
         private void OnDestroy() 
@@ -67,6 +79,7 @@ namespace anypractice
             On.HealthManager.TakeDamage -= knighthit;
             anypractice.Instance._th.start=false;
             anypractice.Instance._th.over=false;
+            if (!win) anypractice.Instance.count = 0;
         }
     }
     public class timerhelp:MonoBehaviour
@@ -118,10 +131,11 @@ namespace anypractice
         {
             //Modding.Logger.Log("now");
             return string.Format(
-                "{0}:{1:D2}:{2:D3}",
+                "{0}:{1:D2}:{2:D3}\n{4}",
                 timeSpan.Minutes,
                 timeSpan.Seconds,
-                timeSpan.Milliseconds
+                timeSpan.Milliseconds,
+                anypractice.Instance.count
                 );
         }
 

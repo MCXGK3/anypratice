@@ -13,7 +13,7 @@ using UObject = UnityEngine.Object;
 
 namespace anypractice
 {
-    public class anypractice : Mod, IGlobalSettings<settings>, IMenuMod
+    public class anypractice : Mod, IGlobalSettings<settings>, IMenuMod,ITogglableMod
     {
         internal static anypractice Instance;
         private bool knightIndicator = false;
@@ -21,6 +21,7 @@ namespace anypractice
         private int i = 0;
         public timerhelp _th;
         private bool timerused=false;
+        public int count = 0;
         public bool ToggleButtonInsideMenu => true;
         public anypractice() : base("anypractice")
         {
@@ -123,7 +124,7 @@ namespace anypractice
                         knightIndicator = false;
                     }
                 }
-                if (!_set.timer)
+                if (_set.timer==0)
                 {
                     _th.text.text = "";
                 }
@@ -134,7 +135,7 @@ namespace anypractice
 
                 if (self.gameObject.name == "Absolute Radiance" && self.FsmName == "Control")
                 {
-                    if (_set.timer)
+                    if (_set.timer!=0)
                     {
                         if (!timerused)
                         {
@@ -174,20 +175,7 @@ namespace anypractice
         public List<IMenuMod.MenuEntry> GetMenuData(IMenuMod.MenuEntry? toggleButtonEntry)
         {
             List<IMenuMod.MenuEntry> menus = new();
-            menus.Add(
-            new()
-            {
-                Name = "总开关",
-                Description = "总开关开启时，其他才有效",
-                Values = new string[]
-                {
-                    Language.Language.Get("MOH_ON", "MainMenu"),
-                    Language.Language.Get("MOH_OFF", "MainMenu"),
-                },
-                Saver = i => _set.on = i == 0,
-                Loader = () => _set.on ? 0 : 1
-            }
-            );
+            if(toggleButtonEntry != null) { menus.Add(toggleButtonEntry.Value); }
             menus.Add(
             new()
             {
@@ -310,15 +298,31 @@ namespace anypractice
                  Description = "会记录从第一刀到最后一刀的时间",
                  Values = new string[]
                  {
-                     Language.Language.Get("MOH_ON", "MainMenu"),
-                     Language.Language.Get("MOH_OFF", "MainMenu"),
+                     "关闭",
+                     "第一刀到最后一刀",
+                     "标题最后一帧到最后一刀"
                  },
-                 Saver = i => _set.timer = i == 0,
-                 Loader = () => _set.timer ? 0 : 1
+                 Saver = i => _set.timer = i ,
+                 Loader = () => _set.timer
              }
          );
             return menus;
         }
 
+        public void Unload()
+        {
+            if (knightIndicator)
+            {
+                Indicator indicator = GameObject.Find("Knight").GetComponent<Indicator>();
+                if (indicator != null) GameObject.Destroy(indicator);
+                knightIndicator = false;
+            }
+            On.PlayMakerFSM.OnEnable -= fsm_on;
+            ModHooks.HeroUpdateHook -= baldurfix;
+            ModHooks.GetPlayerIntHook -= LegacyCost;
+            ModHooks.AfterPlayerDeadHook -= carefreeset1;
+            ModHooks.CharmUpdateHook -= carefreeset;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= sceneChanged;
         }
+    }
     }
