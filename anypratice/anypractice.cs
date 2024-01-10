@@ -17,25 +17,8 @@ namespace anypractice
     {
         internal static anypractice Instance;
         private bool test2 = false;
-        private bool skinused = false;
         public settings _set = new();
-        public class radianceSkin{
-            public string name;
-            public string author;
-            public bool v1 = false;
-            public bool v2 = false;
-            public bool v3 = false;
-            public Texture2D skin1 = new(1, 1);
-            public Texture2D skin2 = new(1, 1);
-            public Texture2D skin3 = new(1, 1);
-        }
-        public List<radianceSkin> skinList=new List<radianceSkin>();
-        public List<string> skinNames=new List<string>();
-        public string[] skinvalues;
-        List<Texture> texs = new List<Texture>();
         private int i = 0;
-        //private Texture2D radianceSkin1;
-        public List<GameObject> CH = new();
         public timerhelp _th;
         private bool timerused=false;
         public bool ToggleButtonInsideMenu => true;
@@ -57,74 +40,6 @@ namespace anypractice
             ModHooks.AfterPlayerDeadHook += carefreeset1;
             ModHooks.CharmUpdateHook += carefreeset;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += sceneChanged;
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            string[] manifestResourceNames = executingAssembly.GetManifestResourceNames();
-            // Log("ALL the resource have " + manifestResourceNames.Length);
-            skinNames.Add("关闭");
-            skinList.Add(new() { author="Team Cherry"});
-            foreach (string text in manifestResourceNames)
-            {
-                Log(text);
-                if (!text.EndsWith(".png"))
-                {
-                    continue;
-                }
-
-                Stream stream = executingAssembly.GetManifestResourceStream(text);
-                if (stream != null)
-                {
-                    byte[] array = new byte[stream.Length];
-                    stream.Read(array, 0, array.Length);
-                    stream.Dispose();
-                    string[] temp = text.Split('-');
-                    temp[0] = temp[0].Split('.')[2];
-                    temp[2] = temp[2].Split('.')[0];
-                    if (!temp[0].IsAny(skinNames.ToArray()))
-                    {
-                        skinNames.Add(temp[0]);
-                        i = skinNames.Count-1;
-                        skinList.Add(new radianceSkin {name=temp[0],author = temp[1]});
-                    }
-                    else
-                    {
-                        i = skinNames.IndexOf(temp[0]);
-                    }
-                    switch (temp[2].ToString())
-                    {
-                        case "1":
-                            skinList[i].skin1.LoadImage(array, true);
-                            skinList[i].v1 = true;
-                            break;
-                        case "2":
-                            skinList[i].skin2.LoadImage(array, true);
-                            skinList[i].v2 = true;
-                            break;
-                        case "3":
-                            skinList[i].skin3.LoadImage(array, true);
-                            skinList[i].v3 = true;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                Log(text + "is loaded");
-            }
-            skinvalues=skinNames.ToArray();
-            for (int i = 1; i < skinvalues.Length; i++)
-            {
-                skinvalues[i] += " from ";
-                skinvalues[i] += skinList[i].author;
-            }
-            /*stream = typeof(anypratice).Assembly.GetManifestResourceStream("anypratice.Rad1png");
-            if (stream != null)
-            {
-                byte[] array = new byte[stream.Length];
-                stream.Read(array, 0, array.Length);
-                stream.Close();
-                radianceSkin1 = new(1, 1);
-                radianceSkin1.LoadImage(array, true);
-                r1 = true;
-            }*/
         }
 
         private void carefreeset(PlayerData data, HeroController controller)
@@ -237,45 +152,6 @@ namespace anypractice
                         self.gameObject.LocateMyFSM("Attack Commands").GetAction<RandomFloat>("Aim", 4).min = 0f;
                         self.gameObject.LocateMyFSM("Attack Commands").GetAction<RandomFloat>("Aim", 4).max = 0f;
                     }
-                    if (true)
-                    {
-                        Log("skin ok");
-                        /*if (r0 && r1)
-                       {
-                           //FindChild(self.gameObject);
-                           //foreach (GameObject go in CH) 
-                               if (test)
-                               {
-                                   foreach (Material mat in materials)
-                                   {
-                                       TextureUtils.WriteTextureToFile(mat.mainTexture, "C:\\Users\\shownyoung\\Desktop\\temp\\" + mat.mainTexture.name + ".png");
-                                   }
-                               }*/
-                        Material[] materials = self.GetComponent<tk2dSprite>().Collection.materials;
-                        Log(materials.Length);
-                        if (_set.skin != 0)
-                        {
-                            if (!skinused)
-                            {
-                                texs.Add(materials[0].mainTexture);
-                                texs.Add(materials[1].mainTexture);
-                                texs.Add(materials[2].mainTexture);
-                                skinused = true;
-                            }
-                            if (skinList[_set.skin].v1) materials[0].mainTexture = skinList[_set.skin].skin1;
-                            if (skinList[_set.skin].v2) materials[1].mainTexture = skinList[_set.skin].skin2;
-                            if (skinList[_set.skin].v3) materials[2].mainTexture = skinList[_set.skin].skin3;
-                        }
-                        else
-                        {
-                            if (skinused)
-                            {
-                                materials[0].mainTexture = texs[0];
-                                materials[1].mainTexture = texs[1];
-                                materials[2].mainTexture = texs[2];
-                            }
-                        }
-                    }
                     if (_set.orbindicator)
                     {
                         self.gameObject.AddComponent<radIndicators>();
@@ -283,22 +159,8 @@ namespace anypractice
                     if (_set.abyssremove)
                     {
                         self.gameObject.AddComponent<abyssremover>();
-                    }
-                    
+                    }      
                 }
-                /*  if (self.gameObject.name == "Abyss Pit"&&self.FsmName=="Ascend")
-                  {
-                      if (_set.abyssremove)
-                      {
-                          self.GetState("Idle").InsertCustomAction(() => { self.gameObject.SetActive(false); }, 0);
-                      }
-                  }*/
-
-               /* if(self.FsmName == "Superdash")
-                {
-                    Log("OK");
-                }*/
-                
             } 
             orig(self);
             
@@ -410,16 +272,6 @@ namespace anypractice
             menus.Add(
             new()
             {
-                Name = "辐光皮肤",
-                Description = "共有"+(skinvalues.Length-1)+"款皮肤",
-                Values = skinvalues,
-                Saver = i => _set.skin = i ,
-                Loader = () => _set.skin
-            }
-        );
-            menus.Add(
-            new()
-            {
                 Name = "无敌显示",
                 Description = "处于无敌状态时显示绿圈",
                 Values = new string[]
@@ -465,25 +317,5 @@ namespace anypractice
             return menus;
         }
 
-        void FindChild(GameObject child)
-        {
-
-
-
-
-            //利用for循环 获取物体下的全部子物体
-            for (int c = 0; c < child.transform.childCount; c++)
-            {
-                //如果子物体下还有子物体 就将子物体传入进行回调查找 直到物体没有子物体为止
-                if (child.transform.GetChild(c).childCount > 0)
-                {
-                    FindChild(child.transform.GetChild(c).gameObject);
-
-                }
-                CH.Add(child.transform.GetChild(c).gameObject);
-
-
-            }
         }
     }
-}
