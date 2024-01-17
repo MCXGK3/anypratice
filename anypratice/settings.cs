@@ -19,6 +19,9 @@ namespace anypractice
         public bool indicator=true;
         public int cycle=0;
         public int timer=0;
+        public int timerColor = 0;
+        public bool radiance = false;
+        public bool tele=false;
        //public bool superdash=true;
     }
 }

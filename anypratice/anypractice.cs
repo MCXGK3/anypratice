@@ -29,7 +29,7 @@ namespace anypractice
         }
         public override string GetVersion()
         {
-            return "0.0.0.1";
+            return "0.0.1.0";
         }
 
 
@@ -88,7 +88,21 @@ namespace anypractice
 
         private void baldurfix()
         {
-
+            if (_set.tele)
+            {
+                if (Input.GetKeyDown(KeyCode.Delete))
+                {
+                    if (SceneUtils.getCurrentScene().name == "GG_Radiance")
+                    {
+                        GameManager.instance.ChangeToScene("GG_Workshop", "door1", 0f);
+                        //UnityEngine.SceneManagement.SceneManager.LoadScene("GG_Workshop");
+                    }
+                    else
+                    {
+                        UnityEngine.SceneManagement.SceneManager.LoadScene("GG_Radiance");
+                    }
+                }
+            }
                 if (_set.baldurfix)
                 {
                     if (global::PlayerData.instance.blockerHits < 4)
@@ -128,14 +142,27 @@ namespace anypractice
                 {
                     _th.text.text = "";
                 }
+            else
+            {
+                if (_th != null)
+                switch (_set.timerColor)
+                {
+                    case 0: _th.text.color = Color.black;break;
+                    case 1: _th.text.color = Color.white; break;
+                    case 2: _th.text.color = Color.red; break;
+                    case 3: _th.text.color = Color.blue; break;
+                    case 4: _th.text.color = Color.green; break;
+                }
+            }
         }
 
         private void fsm_on(On.PlayMakerFSM.orig_OnEnable orig, PlayMakerFSM self)
         {
-
+            try
+            {
                 if (self.gameObject.name == "Absolute Radiance" && self.FsmName == "Control")
                 {
-                    if (_set.timer!=0)
+                    if (_set.timer != 0)
                     {
                         if (!timerused)
                         {
@@ -164,10 +191,14 @@ namespace anypractice
                     if (_set.abyssremove)
                     {
                         self.gameObject.AddComponent<abyssremover>();
-                    }      
+                    }
+                    if (!_set.radiance) orig(self);
                 }
-            orig(self);
-            
+                else { orig(self); }
+            }
+            catch { orig(self); }
+
+
         }
         public void OnLoadGlobal(settings settings) => _set = settings;
         public settings OnSaveGlobal() => _set;
@@ -188,6 +219,34 @@ namespace anypractice
                 },
                 Saver = i => _set.baldurfix = i == 0,
                 Loader = () => _set.baldurfix ? 0 : 1
+            }
+        );
+            menus.Add(
+            new()
+            {
+                Name = "任RUA辐光",
+                Description = "辐光将保持不动，只能通过梦门传出",
+                Values = new string[]
+                {
+                    Language.Language.Get("MOH_ON", "MainMenu"),
+                    Language.Language.Get("MOH_OFF", "MainMenu"),
+                },
+                Saver = i => _set.radiance = i == 0,
+                Loader = () => _set.radiance ? 0 : 1
+            }
+        );
+            menus.Add(
+            new()
+            {
+                Name = "辐光瞬移",
+                Description = "按下delete键,若不在辐光场地则传送到辐光场地，若在辐光场地则传送到诸神堂",
+                Values = new string[]
+                {
+                    Language.Language.Get("MOH_ON", "MainMenu"),
+                    Language.Language.Get("MOH_OFF", "MainMenu"),
+                },
+                Saver = i => _set.tele = i == 0,
+                Loader = () => _set.tele ? 0 : 1
             }
         );
             menus.Add(
@@ -305,7 +364,24 @@ namespace anypractice
                  Saver = i => _set.timer = i ,
                  Loader = () => _set.timer
              }
+
          );
+            menus.Add(
+             new()
+             {
+                 Name = "计时颜色",
+                 Description = "共有黑白红蓝绿五种颜色",
+                 Values = new string[]
+                 {
+                     "黑",
+                     "白",
+                     "红",
+                     "蓝",
+                     "绿"
+                 },
+                 Saver = i => _set.timerColor = i,
+                 Loader = () => _set.timerColor
+             });
             return menus;
         }
 

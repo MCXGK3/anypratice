@@ -62,14 +62,6 @@
     <None Remove="Resources\冰镇辐光-明-2.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Any2.0-Bob-1.png" />
-    <EmbeddedResource Include="Resources\Any2.0-Bob-2.png" />
-    <EmbeddedResource Include="Resources\OwORad-Axton-1.png" />
-    <EmbeddedResource Include="Resources\OwORad-Axton-2.png" />
-    <EmbeddedResource Include="Resources\冰镇辐光-明-1.png" />
-    <EmbeddedResource Include="Resources\冰镇辐光-明-2.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>
     </Reference>

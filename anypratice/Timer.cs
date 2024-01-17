@@ -27,9 +27,17 @@ namespace anypractice
             {
                 anypractice.Instance._th.time = 0f;
             }
+            else
+            {
+                bc.InsertCustomAction("Flash Down", () =>
+                {
+                    StartCoroutine(starttimer());
+                }, 4);
+            }
            //Modding.Logger.Log("CREATE OK");
             On.HealthManager.TakeDamage += knighthit;
             _hm=base.GetComponent<HealthManager>();
+            
         }
         private void Stop()
         {
@@ -43,15 +51,14 @@ namespace anypractice
         {
             anypractice.Instance._th.start = false;
             _con.InsertCustomAction("Final Impact", Stop, 0);
-            bc.InsertCustomAction("Flash Down", () =>
-            {
-                StartCoroutine(starttimer());
-            }, 4);
+            
             anypractice.Instance._th.over = false;
         }
 
         private IEnumerator starttimer()
         {
+            if(anypractice.Instance._set.timer == 2)
+            anypractice.Instance._th.time = 0f;
             yield return new WaitForSeconds(0.5f);
             start=true;
         }
@@ -131,7 +138,7 @@ namespace anypractice
         {
             //Modding.Logger.Log("now");
             return string.Format(
-                "{0}:{1:D2}:{2:D3}\n{4}",
+                "{0}:{1:D2}:{2:D3}\n{3}",
                 timeSpan.Minutes,
                 timeSpan.Seconds,
                 timeSpan.Milliseconds,
