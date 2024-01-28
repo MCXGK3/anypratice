@@ -138,7 +138,7 @@ namespace anypractice
                         knightIndicator = false;
                     }
                 }
-                if (_set.timer==0)
+                if (_set.timer==0&&timerused)
                 {
                     _th.text.text = "";
                 }

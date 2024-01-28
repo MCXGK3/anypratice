@@ -46,6 +46,7 @@ namespace anypractice
                 anypractice.Instance._th.over = true;
             }
             anypractice.Instance.count++;
+            win = true;
         }
         private void Start()
         {
