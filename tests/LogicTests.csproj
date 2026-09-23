@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <AssemblyName>LogicTests</AssemblyName>
+    <RootNamespace>CustomRadAttacks.Tests</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 直接编译 mod 里的纯逻辑文件，不复制一份 -->
+    <Compile Include="Program.cs" />
+    <Compile Include="..\AttackCatalog.cs"><Link>AttackCatalog.cs</Link></Compile>
+    <Compile Include="..\AttackSequence.cs"><Link>AttackSequence.cs</Link></Compile>
+    <Compile Include="..\CustomRadAttacksSettings.cs"><Link>CustomRadAttacksSettings.cs</Link></Compile>
+  </ItemGroup>
+</Project>
