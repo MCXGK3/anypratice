@@ -333,7 +333,7 @@ namespace anypractice
                 Loader = () => _set.indicator ? 0 : 1
             }
         );
-            menus.Add(
+            /*menus.Add(
            new()
            {
                Name = "阶段选择",
@@ -349,7 +349,7 @@ namespace anypractice
                Saver = i => _set.cycle= i ,
                Loader = () => _set.cycle
            }
-       );
+       );*/
              menus.Add(
              new()
              {
