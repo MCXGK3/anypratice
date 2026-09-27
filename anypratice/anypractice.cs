@@ -4,62 +4,56 @@ using Modding;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UObject = UnityEngine.Object;
 
-namespace anypratice
+namespace anypractice
 {
-    public class anypratice : Mod, IGlobalSettings<settings>, IMenuMod
+    public class anypractice : Mod, IGlobalSettings<settings>, IMenuMod,ITogglableMod
     {
-        internal static anypratice Instance;
-        private bool test = true;
-        private bool test2 = false;
-        private bool test3 = false;
-        private bool r0 = false;
-        private bool r1 = false;
-        private int damage=-5;
+        internal static anypractice Instance;
+        private bool knightIndicator = false;
         public settings _set = new();
-        private Texture2D radianceSkin0;
-        private Texture2D radianceSkin1;
-        public List<GameObject> CH = new();
+        private int i = 0;
+        public timerhelp _th;
+        private bool timerused=false;
+        public int count = 0;
         public bool ToggleButtonInsideMenu => true;
-        public anypratice() : base("anypratice")
+        public anypractice() : base("anypractice")
         {
             Instance = this;
         }
         public override string GetVersion()
         {
-            return "0.0.0.1";
+            return "0.0.1.0";
         }
+
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
+            
             On.PlayMakerFSM.OnEnable += fsm_on;
             ModHooks.HeroUpdateHook += baldurfix;
+            ModHooks.GetPlayerIntHook += LegacyCost;
             ModHooks.AfterPlayerDeadHook += carefreeset1;
             ModHooks.CharmUpdateHook += carefreeset;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += sceneChanged;
-            var stream = typeof(anypratice).Assembly.GetManifestResourceStream("anypratice.Rad0.png");
-            if (stream != null)
+        }
+
+        private int LegacyCost(string name, int orig)
+        {
+            if(name== "charmCost_32")
             {
-                byte[] array = new byte[stream.Length];
-                stream.Read(array, 0, array.Length);
-                stream.Dispose();
-                radianceSkin0 = new(1, 1);
-                radianceSkin0.LoadImage(array, true);
-                r0 = true;
+                if (_set.legacycost)
+                {
+                    orig = 2;
+                }
             }
-            stream = typeof(anypratice).Assembly.GetManifestResourceStream("anypratice.Rad1png");
-            if (stream != null)
-            {
-                byte[] array = new byte[stream.Length];
-                stream.Read(array, 0, array.Length);
-                stream.Close();
-                radianceSkin1 = new(1, 1);
-                radianceSkin1.LoadImage(array, true);
-                r1 = true;
-            }
+            return orig;
         }
 
         private void carefreeset(PlayerData data, HeroController controller)
@@ -70,38 +64,45 @@ namespace anypratice
 
         private void sceneChanged(Scene arg0, Scene arg1)
         {
-            if (_set.on)
-            {
                 if (_set.carereset)
                 {
                     bool flag = arg1.name == "GG_Workshop";
                     if (flag) { carefreeset1(); }
                 }
-            }
         }
 
         private void carefreeset1()
         {
-            if (_set.on)
-            {
                 if (_set.carereset)
                 {
                     HeroController instance = HeroController.instance;
                     bool flag2 = instance != null;
                     if (flag2)
                     {
-                        Log("OK");
+                        Log("carefreeRNG Reset OK");
                         ReflectionHelper.SetField<HeroController, int>(instance, "hitsSinceShielded", 7);
                     }
                 }
-            }
             return;
         }
 
         private void baldurfix()
         {
-            if (_set.on)
+            if (_set.tele)
             {
+                if (Input.GetKeyDown(KeyCode.Delete))
+                {
+                    if (SceneUtils.getCurrentScene().name == "GG_Radiance")
+                    {
+                        GameManager.instance.ChangeToScene("GG_Workshop", "door1", 0f);
+                        //UnityEngine.SceneManagement.SceneManager.LoadScene("GG_Workshop");
+                    }
+                    else
+                    {
+                        UnityEngine.SceneManagement.SceneManager.LoadScene("GG_Radiance");
+                    }
+                }
+            }
                 if (_set.baldurfix)
                 {
                     if (global::PlayerData.instance.blockerHits < 4)
@@ -122,61 +123,66 @@ namespace anypratice
                 }
                 if (_set.indicator)
                 {
-                    if (!test2)
+                    if (!knightIndicator)
                     {
-                        test2 = true;
+                        knightIndicator = true;
                         GameObject.Find("Knight").AddComponent<Indicator>();
                     }
                 }
                 else
                 {
-                    if (test2)
+                    if (knightIndicator)
                     {
                         Indicator indicator = GameObject.Find("Knight").GetComponent<Indicator>();
                         if (indicator != null) GameObject.Destroy(indicator);
-                        test2 = false;
+                        knightIndicator = false;
                     }
+                }
+                if (_set.timer==0&&timerused)
+                {
+                    _th.text.text = "";
+                }
+            else
+            {
+                if (_th != null)
+                switch (_set.timerColor)
+                {
+                    case 0: _th.text.color = Color.black;break;
+                    case 1: _th.text.color = Color.white; break;
+                    case 2: _th.text.color = Color.red; break;
+                    case 3: _th.text.color = Color.blue; break;
+                    case 4: _th.text.color = Color.green; break;
                 }
             }
         }
 
         private void fsm_on(On.PlayMakerFSM.orig_OnEnable orig, PlayMakerFSM self)
         {
-            if (_set.on)
+            try
             {
                 if (self.gameObject.name == "Absolute Radiance" && self.FsmName == "Control")
                 {
-                    /*if (_set.cycle != 0)
+                    if (_set.timer != 0)
+                    {
+                        if (!timerused)
+                        {
+                            GameObject timer = new GameObject();
+                            UnityEngine.Object.DontDestroyOnLoad(timer);
+                            _th = timer.GetAddComponent<timerhelp>();
+                            timerused = true;
+                        }
+                        self.gameObject.AddComponent<Timer>();
+                    }
+                    if (_set.cycle != 0)
                     {
                         Log("cycle ok");
                         self.gameObject.AddComponent<Cycle>();
-                    }*/
+                    }
                     if (_set.beamlock)
                     {
                         Log("beamlock ok");
                         self.gameObject.LocateMyFSM("Attack Commands").GetAction<RandomFloat>("Aim", 4).min = 0f;
                         self.gameObject.LocateMyFSM("Attack Commands").GetAction<RandomFloat>("Aim", 4).max = 0f;
-                    }
-                    if (_set.skin)
-                    {
-                        Log("skin ok");
-                         /*if (r0 && r1)
-                        {
-                            //FindChild(self.gameObject);
-                            //foreach (GameObject go in CH) 
-                            
-                                Material[] materials = self.GetComponent<tk2dSprite>().Collection.materials;
-                                if (test)
-                                {
-                                    foreach (Material mat in materials)
-                                    {
-                                        TextureUtils.WriteTextureToFile(mat.mainTexture, "C:\\Users\\shownyoung\\Desktop\\temp\\" + mat.mainTexture.name + ".png");
-                                    }
-                                }
-                            
-                            if (r0) materials[0].mainTexture = radianceSkin0;
-                            if (r1) materials[1].mainTexture = radianceSkin1;
-                        }*/
                     }
                     if (_set.orbindicator)
                     {
@@ -186,24 +192,13 @@ namespace anypratice
                     {
                         self.gameObject.AddComponent<abyssremover>();
                     }
-                    
+                    if (!_set.radiance) orig(self);
                 }
-                /*  if (self.gameObject.name == "Abyss Pit"&&self.FsmName=="Ascend")
-                  {
-                      if (_set.abyssremove)
-                      {
-                          self.GetState("Idle").InsertCustomAction(() => { self.gameObject.SetActive(false); }, 0);
-                      }
-                  }*/
+                else { orig(self); }
+            }
+            catch { orig(self); }
 
-               /* if(self.FsmName == "Superdash")
-                {
-                    Log("OK");
-                }*/
-                
-            } 
-            orig(self);
-            
+
         }
         public void OnLoadGlobal(settings settings) => _set = settings;
         public settings OnSaveGlobal() => _set;
@@ -211,20 +206,7 @@ namespace anypratice
         public List<IMenuMod.MenuEntry> GetMenuData(IMenuMod.MenuEntry? toggleButtonEntry)
         {
             List<IMenuMod.MenuEntry> menus = new();
-            menus.Add(
-            new()
-            {
-                Name = "总开关",
-                Description = "总开关开启时，其他才有效",
-                Values = new string[]
-                {
-                    Language.Language.Get("MOH_ON", "MainMenu"),
-                    Language.Language.Get("MOH_OFF", "MainMenu"),
-                },
-                Saver = i => _set.on = i == 0,
-                Loader = () => _set.on ? 0 : 1
-            }
-            );
+            if(toggleButtonEntry != null) { menus.Add(toggleButtonEntry.Value); }
             menus.Add(
             new()
             {
@@ -237,6 +219,34 @@ namespace anypratice
                 },
                 Saver = i => _set.baldurfix = i == 0,
                 Loader = () => _set.baldurfix ? 0 : 1
+            }
+        );
+            menus.Add(
+            new()
+            {
+                Name = "任RUA辐光",
+                Description = "辐光将保持不动，只能通过梦门传出",
+                Values = new string[]
+                {
+                    Language.Language.Get("MOH_ON", "MainMenu"),
+                    Language.Language.Get("MOH_OFF", "MainMenu"),
+                },
+                Saver = i => _set.radiance = i == 0,
+                Loader = () => _set.radiance ? 0 : 1
+            }
+        );
+            menus.Add(
+            new()
+            {
+                Name = "辐光瞬移",
+                Description = "按下delete键,若不在辐光场地则传送到辐光场地，若在辐光场地则传送到诸神堂",
+                Values = new string[]
+                {
+                    Language.Language.Get("MOH_ON", "MainMenu"),
+                    Language.Language.Get("MOH_OFF", "MainMenu"),
+                },
+                Saver = i => _set.tele = i == 0,
+                Loader = () => _set.tele ? 0 : 1
             }
         );
             menus.Add(
@@ -312,20 +322,6 @@ namespace anypratice
             menus.Add(
             new()
             {
-                Name = "辐光皮肤",
-                Description = "皮肤尚无",
-                Values = new string[]
-                {
-                    Language.Language.Get("MOH_ON", "MainMenu"),
-                    Language.Language.Get("MOH_OFF", "MainMenu"),
-                },
-                Saver = i => _set.skin = i == 0,
-                Loader = () => _set.skin ? 0 : 1
-            }
-        );
-            menus.Add(
-            new()
-            {
                 Name = "无敌显示",
                 Description = "处于无敌状态时显示绿圈",
                 Values = new string[]
@@ -354,42 +350,55 @@ namespace anypratice
                Loader = () => _set.cycle
            }
        );*/
-            /* menus.Add(
+             menus.Add(
              new()
              {
-                 Name = "超冲停滞",
-                 Description = "帅",
+                 Name = "辐光计时",
+                 Description = "会记录从第一刀到最后一刀的时间",
                  Values = new string[]
                  {
-                     Language.Language.Get("MOH_ON", "MainMenu"),
-                     Language.Language.Get("MOH_OFF", "MainMenu"),
+                     "关闭",
+                     "第一刀到最后一刀",
+                     "标题最后一帧到最后一刀"
                  },
-                 Saver = i => _set.superdash = i == 0,
-                 Loader = () => _set.superdash ? 0 : 1
+                 Saver = i => _set.timer = i ,
+                 Loader = () => _set.timer
              }
-         );*/
+
+         );
+            menus.Add(
+             new()
+             {
+                 Name = "计时颜色",
+                 Description = "共有黑白红蓝绿五种颜色",
+                 Values = new string[]
+                 {
+                     "黑",
+                     "白",
+                     "红",
+                     "蓝",
+                     "绿"
+                 },
+                 Saver = i => _set.timerColor = i,
+                 Loader = () => _set.timerColor
+             });
             return menus;
         }
 
-        void FindChild(GameObject child)
+        public void Unload()
         {
-
-
-
-
-            //利用for循环 获取物体下的全部子物体
-            for (int c = 0; c < child.transform.childCount; c++)
+            if (knightIndicator)
             {
-                //如果子物体下还有子物体 就将子物体传入进行回调查找 直到物体没有子物体为止
-                if (child.transform.GetChild(c).childCount > 0)
-                {
-                    FindChild(child.transform.GetChild(c).gameObject);
-
-                }
-                CH.Add(child.transform.GetChild(c).gameObject);
-
-
+                Indicator indicator = GameObject.Find("Knight").GetComponent<Indicator>();
+                if (indicator != null) GameObject.Destroy(indicator);
+                knightIndicator = false;
             }
+            On.PlayMakerFSM.OnEnable -= fsm_on;
+            ModHooks.HeroUpdateHook -= baldurfix;
+            ModHooks.GetPlayerIntHook -= LegacyCost;
+            ModHooks.AfterPlayerDeadHook -= carefreeset1;
+            ModHooks.CharmUpdateHook -= carefreeset;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= sceneChanged;
         }
     }
-}
+    }
