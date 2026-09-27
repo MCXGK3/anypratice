@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace anypratice
+namespace anypractice
 {
     public enum RadPhase { P1 = 1, P2 = 2 }
 

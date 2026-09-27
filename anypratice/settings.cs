@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace anypratice
+namespace anypractice
 {
     public class settings
     {
@@ -15,9 +15,13 @@ namespace anypratice
         public bool orbindicator=true;
         public bool carereset=true;
         public bool legacycost=true;
-        public bool skin=true;
+        public int skin=0;
         public bool indicator=true;
         public int cycle=0;
+        public int timer=0;
+        public int timerColor = 0;
+        public bool radiance = false;
+        public bool tele=false;
        //public bool superdash=true;
 
         // ---- 辐光招式控制 ----

@@ -1,4 +1,4 @@
-namespace anypratice
+namespace anypractice
 {
     // 辐光招式选择的三处钩子。钩子是全局的，靠 FSM 身份过滤，只处理辐光那一个。
     // 设计上只发/拦事件，不读转移表、不碰动作索引，因此不影响任何按索引读该 FSM 的 mod。
@@ -20,7 +20,14 @@ namespace anypratice
             On.HutongGames.PlayMaker.Actions.SendRandomEvent.OnEnter += HookTeleport;
         }
 
-        private static settings Set { get { return anypratice.Instance._set; } }
+        internal static void Uninstall()
+        {
+            On.HutongGames.PlayMaker.Actions.SendRandomEventV3.OnEnter -= HookChoice;
+            On.HutongGames.PlayMaker.Actions.SendRandomEvent.OnEnter -= HookNailLr;
+            On.HutongGames.PlayMaker.Actions.SendRandomEvent.OnEnter -= HookTeleport;
+        }
+
+        private static settings Set { get { return anypractice.Instance._set; } }
 
         private static void HookChoice(On.HutongGames.PlayMaker.Actions.SendRandomEventV3.orig_OnEnter orig,
                                        SendRandomEventV3 self)
@@ -37,7 +44,7 @@ namespace anypratice
 
             settings s = Set;
             ChoiceMode mode = phase == RadPhase.P1 ? s.crModeA1 : s.crModeA2;
-            if (!s.crOn || mode == ChoiceMode.Random) { _pendingDir = 0; orig(self); return; }
+            if (!s.on || !s.crOn || mode == ChoiceMode.Random) { _pendingDir = 0; orig(self); return; }
 
             AttackDef def;
             if (mode == ChoiceMode.LockSingle)
@@ -83,7 +90,7 @@ namespace anypratice
             string st = self.State != null ? self.State.Name : fsm.ActiveStateName;
             if (st != "L or R Choice") { orig(self); return; }
 
-            if (!Set.crOn) { orig(self); return; }
+            if (!Set.on || !Set.crOn) { orig(self); return; }
 
             // 方向只由本轮选中的招式名决定（左横刺 = -1 / 右横刺 = +1）；
             // 「横刺」不带方向 → 交还原版左右随机
@@ -107,7 +114,7 @@ namespace anypratice
             if (st != "A2 Tele Choice") { orig(self); return; }
 
             settings s = Set;
-            if (!s.crOn) { orig(self); return; }
+            if (!s.on || !s.crOn) { orig(self); return; }
             if (!s.crTeleRepeat && s.crTelePos == 0) { orig(self); return; }   // 两个都关 = 原版
 
             // Tele N 里是 IntCompare(Last Tele Pos == N) → NEXT 的防重复链；
@@ -127,7 +134,7 @@ namespace anypratice
             FsmInt v = fsm.GetFsmInt("Last Tele Pos");
             if (v == null)
             {
-                anypratice.Instance.LogError("找不到 Control FSM 的 Last Tele Pos");
+                anypractice.Instance.LogError("找不到 Control FSM 的 Last Tele Pos");
                 return;
             }
             v.Value = value;
@@ -138,7 +145,7 @@ namespace anypratice
             FsmEvent e = FindEvent(fsm, eventName);
             if (e == null)
             {
-                anypratice.Instance.LogError("事件找不到: " + eventName);
+                anypractice.Instance.LogError("事件找不到: " + eventName);
                 return;
             }
             fsm.Event(e);

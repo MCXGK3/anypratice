@@ -1,4 +1,4 @@
-namespace anypratice
+namespace anypractice
 {
     // 8 槽固定招式组的指针逻辑（纯 C#，无 Unity 依赖）
     public sealed class AttackSequence
